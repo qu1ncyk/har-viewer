@@ -7,13 +7,13 @@ import App from "./App";
 import { register } from "./sw/register";
 
 render(() =>
-    <Router>
-        <App />
-    </Router>,
-    document.getElementById("root") as HTMLElement
+  <Router>
+    <App />
+  </Router>,
+  document.getElementById("root") as HTMLElement
 );
 
 register()
-    .then(() => fetch("/test-sw"))
-    .then(x => x.text())
-    .then(alert);
+  .then(() => fetch("/test-sw"))
+  .then(x => x.text())
+  .then(alert);
