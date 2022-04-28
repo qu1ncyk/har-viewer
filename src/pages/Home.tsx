@@ -1,15 +1,31 @@
-import { Component } from "solid-js";
+import { Component, createSignal, For, onMount } from "solid-js";
 import type { Har } from "har-format";
+import { Link } from "solid-app-router";
 
 import { readFile } from "../utils";
-import { insert } from "../db";
+import { insert, get } from "../db";
+import styles from "./Home.module.css";
 
 const Home: Component = () => {
+  const [collections, setCollections] = createSignal([] as [string, Date][]);
+
+  onMount(async () => {
+    setCollections(await get.collections());
+  });
+
   return (
     <>
       <h1>HAR viewer</h1>
       <p>Upload a <code>.har</code> file or choose a previously loaded file</p>
       <input type="file" accept=".har, application/json" onInput={upload} />
+      <ul class={styles.list}>
+        <For each={collections()}>{([name, time]) =>
+          <li>
+            <Link href="/" class={styles.collectionName}>{name}</Link>
+            <p class={styles.subtitle}>Snapshot taken at {time.toLocaleString()}</p>
+          </li>
+        }</For>
+      </ul>
     </>
   );
 }
