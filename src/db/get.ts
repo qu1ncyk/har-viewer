@@ -20,3 +20,8 @@ export async function pages(collectionName: string) {
     await Promise.all([store.getAllKeys(), store.getAll(), tx.done]);
   return zip(id, title);
 }
+
+export async function entries(collectionName: string) {
+  const collection = await openCollection(collectionName);
+  return collection.getAll("entries");
+}
