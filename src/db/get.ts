@@ -1,4 +1,5 @@
 import { collectionsDb, openCollection } from "./db";
+import { zip } from "../utils";
 
 export async function collections() {
   const collections = await collectionsDb;
@@ -7,7 +8,15 @@ export async function collections() {
 
   const [names, times] =
     await Promise.all([store.getAllKeys(), store.getAll(), tx.done]);
+  return zip(names, times);
+}
 
-  const output: [string, Date][] = names.map((x, i) => [x, times[i]]);
-  return output;
+export async function pages(collectionName: string) {
+  const collection = await openCollection(collectionName);
+  const tx = collection.transaction("pages");
+  const store = tx.store;
+
+  const [id, title] =
+    await Promise.all([store.getAllKeys(), store.getAll(), tx.done]);
+  return zip(id, title);
 }

@@ -21,7 +21,7 @@ const Home: Component = () => {
       <ul class={styles.list}>
         <For each={collections()}>{([name, time]) =>
           <li>
-            <Link href="/" class={styles.collectionName}>{name}</Link>
+            <Link href={collectionUrl(name)} class={styles.collectionName}>{name}</Link>
             <p class={styles.subtitle}>Snapshot taken at {time.toLocaleString()}</p>
           </li>
         }</For>
@@ -46,4 +46,8 @@ async function upload(event: InputEvent) {
     alert("Could not load the file");
     console.error(e);
   }
+}
+
+function collectionUrl(collectionName: string) {
+  return `/collection/${encodeURIComponent(collectionName)}`;
 }

@@ -1,0 +1,7 @@
+.list {
+  composes: list from "./Home.module.css";
+}
+
+.pageName {
+  composes: collectionName from "./Home.module.css";
+}
