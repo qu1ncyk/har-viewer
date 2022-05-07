@@ -1,4 +1,5 @@
 import { get } from "../db";
+import { rewrite } from "../rewrite/sw";
 
 export async function view(url: URL) {
   // /view/:collection/:time/:originalUrl
@@ -9,8 +10,6 @@ export async function view(url: URL) {
 
   const entries = await get.entries(collection);
   const entry = entries.find(x => x.url === originalUrl);
-  return new Response(entry?.content, { 
-    headers: entry?.responseHeaders,
-    status: entry?.status,
-  });
+
+  return await rewrite(entry, time, collection);
 }
