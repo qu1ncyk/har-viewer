@@ -20,11 +20,11 @@ export function rewriteStyleElement(style: HTMLStyleElement, url: string, collec
 
       let modifier = "";
       if (rule instanceof CSSImportRule)
-        modifier = "_cs";
+        modifier = "cs_";
       else if (rule instanceof CSSFontFaceRule)
-        modifier = "_oe";
+        modifier = "oe_";
       else
-        modifier = "_im";
+        modifier = "im_";
 
       // CSSRule.prototype.cssText wraps all urls in url("")
       outputCss += rewriteUrlFunction(rule.cssText, url, collection, modifier) + "\n";
@@ -35,7 +35,7 @@ export function rewriteStyleElement(style: HTMLStyleElement, url: string, collec
 
 export function rewriteStyleAttribute(element: HTMLElement, url: string, collection: string) {
   const css = element.style.cssText;
-  element.style.cssText = rewriteUrlFunction(css, url, collection, "_im");
+  element.style.cssText = rewriteUrlFunction(css, url, collection, "im_");
 }
 
 function escapeCss(str: string) {

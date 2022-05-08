@@ -39,9 +39,9 @@ export async function rewrite(entry?: Entry, time?: string, collection?: string)
 function getFileType(modifier: string, headers: Headers) {
   const contentType = headers.get('Content-Type');
   switch (modifier) {
-    case "_cs":
+    case "cs_":
       return "css";
-    case "_id":
+    case "id_":
       return undefined;
     default:
       if (contentType === "text/html")

@@ -43,56 +43,56 @@ export function rewriteHtml(html: string, url: string, collection: string) {
 
   // list of tags with URLs:
   // https://stackoverflow.com/questions/2725156/complete-list-of-html-tag-attributes-which-have-a-url-value
-  rewriteAttribute("a", "href", "_mp");
-  rewriteAttribute("applet", "codebase", "_oe");
-  rewriteAttribute("area", "href", "_mp");
-  rewriteAttribute("base", "href", "_mp");
-  rewriteAttribute("blockquote", "cite", "_mp");
-  rewriteAttribute("body", "background", "_im");
-  rewriteAttribute("del", "cite", "_mp");
-  rewriteAttribute("form", "action", "_mp");
-  rewriteAttribute("frame", "longdesc", "_mp");
-  rewriteAttribute("frame", "src", "_fr");
-  rewriteAttribute("head", "profile", "_mp");
-  rewriteAttribute("iframe", "longdesc", "_mp");
-  rewriteAttribute("iframe", "src", "_if");
-  rewriteAttribute("img", "src", "_im");
-  rewriteAttribute("img", "longdesc", "_mp");
-  rewriteAttribute("input", "src", "_im");
-  rewriteAttribute("ins", "cite", "_mp");
-  rewriteAttribute("link", "href", "_oe");
-  rewriteAttribute("object", "classid", "_oe");
-  rewriteAttribute("object", "codebase", "_oe");
-  rewriteAttribute("object", "data", "_oe");
-  rewriteAttribute("q", "cite", "_mp");
-  rewriteAttribute("script", "src", "_js");
-  rewriteAttribute("audio", "src", "_oe");
-  rewriteAttribute("button", "formaction", "_mp");
-  rewriteAttribute("command", "icon", "_im");
-  rewriteAttribute("embed", "src", "_oe");
-  rewriteAttribute("html", "manifest", "_id");
-  rewriteAttribute("input", "formaction", "_mp");
-  rewriteAttribute("source", "src", "_oe");
-  rewriteAttribute("track", "src", "_oe");
-  rewriteAttribute("video", "poster", "_im");
-  rewriteAttribute("video", "src", "_oe");
+  rewriteAttribute("a", "href", "mp_");
+  rewriteAttribute("applet", "codebase", "oe_");
+  rewriteAttribute("area", "href", "mp_");
+  rewriteAttribute("base", "href", "mp_");
+  rewriteAttribute("blockquote", "cite", "mp_");
+  rewriteAttribute("body", "background", "im_");
+  rewriteAttribute("del", "cite", "mp_");
+  rewriteAttribute("form", "action", "mp_");
+  rewriteAttribute("frame", "longdesc", "mp_");
+  rewriteAttribute("frame", "src", "fr_");
+  rewriteAttribute("head", "profile", "mp_");
+  rewriteAttribute("iframe", "longdesc", "mp_");
+  rewriteAttribute("iframe", "src", "if_");
+  rewriteAttribute("img", "src", "im_");
+  rewriteAttribute("img", "longdesc", "mp_");
+  rewriteAttribute("input", "src", "im_");
+  rewriteAttribute("ins", "cite", "mp_");
+  rewriteAttribute("link", "href", "oe_");
+  rewriteAttribute("object", "classid", "oe_");
+  rewriteAttribute("object", "codebase", "oe_");
+  rewriteAttribute("object", "data", "oe_");
+  rewriteAttribute("q", "cite", "mp_");
+  rewriteAttribute("script", "src", "js_");
+  rewriteAttribute("audio", "src", "oe_");
+  rewriteAttribute("button", "formaction", "mp_");
+  rewriteAttribute("command", "icon", "im_");
+  rewriteAttribute("embed", "src", "oe_");
+  rewriteAttribute("html", "manifest", "id_");
+  rewriteAttribute("input", "formaction", "mp_");
+  rewriteAttribute("source", "src", "oe_");
+  rewriteAttribute("track", "src", "oe_");
+  rewriteAttribute("video", "poster", "im_");
+  rewriteAttribute("video", "src", "oe_");
 
-  rewriteSrcset("img", "_im");
-  rewriteSrcset("source", "_oe");
+  rewriteSrcset("img", "im_");
+  rewriteSrcset("source", "oe_");
 
   // "url1 url2 url3"
   rewriteAttributeExec("object", "archive",
     (value) => value.split(" ")
       // when the value contains multiple spaces next to each other, the
       // split value becomes an empty string
-      .map(s => s === "" ? s : rewriteUrl(s, url, collection, "_oe"))
+      .map(s => s === "" ? s : rewriteUrl(s, url, collection, "oe_"))
       .join(" ")
   );
 
   // "url1,url2,url3"
   rewriteAttributeExec("appplet", "archive",
     (value) => value.split(",")
-      .map(s => rewriteUrl(s, url, collection, "_oe"))
+      .map(s => rewriteUrl(s, url, collection, "oe_"))
       .join(",")
   );
 
@@ -102,7 +102,7 @@ export function rewriteHtml(html: string, url: string, collection: string) {
     if (content) {
       let [time, redirect] = content.split(";");
       if (redirect) {
-        redirect = rewriteUrl(redirect, url, collection, "_mp");
+        redirect = rewriteUrl(redirect, url, collection, "mp_");
         element.setAttribute("content", `${time}; ${redirect}`);
       }
     }
