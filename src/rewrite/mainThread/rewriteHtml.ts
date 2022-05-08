@@ -1,4 +1,5 @@
 import { rewriteUrl } from "../rewriteUrl";
+import { rewriteStyleAttribute, rewriteStyleElement } from "./rewriteCss";
 
 export function rewriteHtml(html: string, url: string, collection: string) {
   const parser = new DOMParser();
@@ -107,6 +108,13 @@ export function rewriteHtml(html: string, url: string, collection: string) {
     }
   });
 
-  console.log(dom);
+  dom.querySelectorAll("style").forEach(element =>
+    rewriteStyleElement(element, url, collection)
+  );
+  dom.querySelectorAll("[style]").forEach(element => {
+    if (element instanceof HTMLElement)
+      rewriteStyleAttribute(element, url, collection);
+  });
+
   return dom.documentElement.outerHTML;
 }

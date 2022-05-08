@@ -22,10 +22,12 @@ export async function rewrite(entry?: Entry, time?: string, collection?: string)
 
   const decoder = new TextDecoder();
   const modifier = time?.slice(-3);
-  switch (modifier) {
-    case "_mp":
-      if (headers.get("Content-Type") === "text/html")
-        content = await rewriteHtml(decoder.decode(content), url, collection);
+  switch (getFileType(modifier, headers)) {
+    case "html":
+      content = await rewriteHtml(decoder.decode(content), url, collection);
+      break;
+    case "css":
+      content = await rewriteCss(decoder.decode(content), url, collection);
       break;
   }
 
@@ -34,7 +36,26 @@ export async function rewrite(entry?: Entry, time?: string, collection?: string)
   return new Response(content, { headers, status });
 }
 
+function getFileType(modifier: string, headers: Headers) {
+  const contentType = headers.get('Content-Type');
+  switch (modifier) {
+    case "_cs":
+      return "css";
+    case "_id":
+      return undefined;
+    default:
+      if (contentType === "text/html")
+        return "html";
+      else if (contentType === "text/css")
+        return "css";
+  }
+}
+
 function rewriteHtml(html: string, url: string, collection: string) {
   // the actual code for the rewriter is executed at the main thread
   return sendAction("rewrite html", { html, url, collection }) as Promise<string>;
+}
+
+function rewriteCss(css: string, url: string, collection: string) {
+  return sendAction("rewrite css", { css, url, collection }) as Promise<string>;
 }
