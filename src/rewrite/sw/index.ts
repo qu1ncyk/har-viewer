@@ -44,9 +44,9 @@ function getFileType(modifier: string, headers: Headers) {
     case "id_":
       return undefined;
     default:
-      if (contentType === "text/html")
+      if (contentType?.startsWith("text/html"))
         return "html";
-      else if (contentType === "text/css")
+      else if (contentType?.startsWith("text/css"))
         return "css";
   }
 }
