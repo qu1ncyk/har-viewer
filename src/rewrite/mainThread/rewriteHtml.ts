@@ -1,5 +1,9 @@
+// This file contains parts that are borrowed from
+// https://github.com/webrecorder/wabac.js under AGPLv3+
+
 import { rewriteUrl } from "../rewriteUrl";
 import { rewriteStyleAttribute, rewriteStyleElement } from "./rewriteCss";
+import { rewriteJs } from "./rewriteJs";
 
 export function rewriteHtml(html: string, url: string, collection: string) {
   const parser = new DOMParser();
@@ -115,6 +119,45 @@ export function rewriteHtml(html: string, url: string, collection: string) {
     if (element instanceof HTMLElement)
       rewriteStyleAttribute(element, url, collection);
   });
+
+  dom.querySelectorAll("script").forEach(element => {
+    if (element.textContent?.trim())
+      element.textContent = rewriteJs(element.textContent, url, collection);
+  });
+
+  // https://github.com/webrecorder/wabac.js/blob/4da4093d15b8a182eba18615ab378cab8bf01479/src/collection.js#L389
+
+  const encodedCollection = encodeURIComponent(collection);
+  const wombatConfig = {
+    top_url: `${location.origin}/view/${encodedCollection}/0/${url}`,
+    url,
+    timestamp: 0,
+    request_ts: 0,
+    prefix: `${location.origin}/view/${encodedCollection}/`,
+    mod: "mp_",
+    is_framed: false,
+    is_live: false,
+    coll: collection,
+    proxy_magic: "",
+    static_prefix: "https://cdn.jsdelivr.net/npm/@webrecorder/wombat@3.3.6/dist/",
+    enable_auto_fetch: true,
+    isSW: true,
+    wombat_ts: 0,
+    wombat_sec: 0,
+    wombat_scheme: new URL(url).protocol.replace(":", ""),
+    wombat_host: new URL(url).host,
+    wombat_opts: {}
+  };
+  console.log(wombatConfig);
+
+  dom.head.insertAdjacentHTML("afterbegin", `
+    <script src="https://cdn.jsdelivr.net/npm/@webrecorder/wombat@3.3.6/dist/wombat.js"></script>
+    <script>
+      if (window && window._WBWombatInit) {
+        window._WBWombatInit(${JSON.stringify(wombatConfig)});
+      }
+    </script>
+  `);
 
   return dom.documentElement.outerHTML;
 }

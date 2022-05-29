@@ -29,6 +29,8 @@ export async function rewrite(entry?: Entry, time?: string, collection?: string)
     case "css":
       content = await rewriteCss(decoder.decode(content), url, collection);
       break;
+    case "js":
+      content = await rewriteJs(decoder.decode(content), url, collection);
   }
 
   rewriteHeaders(headers, url, collection);
@@ -41,6 +43,8 @@ function getFileType(modifier: string, headers: Headers) {
   switch (modifier) {
     case "cs_":
       return "css";
+    case "js_":
+      return "js";
     case "id_":
       return undefined;
     default:
@@ -48,6 +52,8 @@ function getFileType(modifier: string, headers: Headers) {
         return "html";
       else if (contentType?.startsWith("text/css"))
         return "css";
+      else if (contentType?.startsWith("text/javascript"))
+        return "js";
   }
 }
 
@@ -58,4 +64,8 @@ function rewriteHtml(html: string, url: string, collection: string) {
 
 function rewriteCss(css: string, url: string, collection: string) {
   return sendAction("rewrite css", { css, url, collection }) as Promise<string>;
+}
+
+function rewriteJs(js: string, url: string, collection: string) {
+  return sendAction("rewrite js", { js, url, collection }) as Promise<string>;
 }
