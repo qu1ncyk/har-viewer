@@ -32,7 +32,10 @@ export interface Entry {
 interface Collection extends DBSchema {
   pages: {
     key: string; // id
-    value: string; // title
+    value: {
+      title: string;
+      url?: string;
+    };
   };
   entries: {
     value: Entry;
