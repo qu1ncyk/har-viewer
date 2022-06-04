@@ -1,0 +1,17 @@
+.topBar {
+  background-color: #eee;
+  display: flex;
+  padding: 0.5em;
+  gap: 0.4em;
+}
+
+.iconButton {
+  background-color: transparent;
+  border-width: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+.input {
+  flex-grow: 1;
+}

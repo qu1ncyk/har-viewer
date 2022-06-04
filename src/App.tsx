@@ -5,6 +5,7 @@ import SwLoader from './SwLoader';
 
 const Home = lazy(() => import('./pages/Home'));
 const Collection = lazy(() => import('./pages/Collection'));
+const Viewer = lazy(() => import('./pages/Viewer'));
 
 const App: Component = () => {
   return (
@@ -12,6 +13,7 @@ const App: Component = () => {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/collection/:name" element={<Collection />} />
+        <Route path="/viewer/:name/*url" element={<Viewer />} />
       </Routes>
     </SwLoader>
   );
