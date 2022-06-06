@@ -28,3 +28,13 @@ export function zip<T, U>(array1: T[], array2: U[]): [T, U][] {
 export function noun(noun: string, plural: boolean) {
   return noun + (plural ? "s" : "");
 }
+
+// /viewer/:collection/*url
+export function viewerExtractUrl(url: string) {
+  return new URL(url, location.href).pathname.split("/").slice(3).join("/");
+}
+
+// /view/:collection/:time/*url
+export function viewExtractUrl(url: string) {
+  return new URL(url, location.href).pathname.split("/").slice(4).join("/");
+}

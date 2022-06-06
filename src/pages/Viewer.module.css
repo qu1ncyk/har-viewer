@@ -1,3 +1,9 @@
+.container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
 .topBar {
   background-color: #eee;
   display: flex;
@@ -14,4 +20,9 @@
 
 .input {
   flex-grow: 1;
+}
+
+.frame {
+  flex-grow: 1;
+  border-width: 0;
 }
