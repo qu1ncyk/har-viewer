@@ -1,6 +1,6 @@
 import { Component, createEffect, createSignal } from "solid-js";
 import { icons } from "feather-icons";
-import { useParams, useLocation } from "solid-app-router";
+import { useParams, useLocation, Link } from "solid-app-router";
 
 import styles from "./Viewer.module.css";
 import Feather from "../Feather";
@@ -15,7 +15,7 @@ const Viewer: Component = () => {
 
   /* When the url changes in the iframe window, the url in the input field and
      url should change, but the `src` attribute of the `iframe` should not. But
-     when `src` changes, the input and url should change as well.
+     when the form gets submitted, the `src` attribute and url should change.
 
       input submit       iframe onload
             v                 v
@@ -40,31 +40,54 @@ const Viewer: Component = () => {
 
   function frameLoad(e: Event) {
     if (iframe?.contentWindow) {
-      console.log(iframe);
       setUrl(viewExtractUrl(iframe.contentWindow.location.href));
     }
+  }
+
+  function frameAction(action: "back" | "forward" | "reload") {
+    return () => {
+      const frameWindow = iframe?.contentWindow;
+      if (frameWindow) {
+        switch (action) {
+          case "back":
+            frameWindow.history.back();
+            break;
+          case "forward":
+            frameWindow.history.forward();
+            break;
+          case "reload":
+            frameWindow.location.reload();
+            break;
+        }
+      }
+    };
   }
 
   return (
     <div class={styles.container}>
       <div class={styles.topBar}>
-        <button class={styles.iconButton}>
+        <Link href={`/collection/${name}`} class={styles.iconButton}>
           <Feather icon={icons.x} />
-        </button>
-        <button class={styles.iconButton}>
+        </Link>
+        <button class={styles.iconButton} onClick={frameAction("back")}>
           <Feather icon={icons["arrow-left"]} />
         </button>
-        <button class={styles.iconButton}>
+        <button class={styles.iconButton} onClick={frameAction("forward")}>
           <Feather icon={icons["arrow-right"]} />
         </button>
-        <button class={styles.iconButton}>
+        <button class={styles.iconButton} onClick={frameAction("reload")}>
           <Feather icon={icons["refresh-cw"]} />
         </button>
         <form id="url-bar" onSubmit={submitHandler} />
         <input class={styles.input} form="url-bar" type="url" value={url()} ref={input} />
       </div>
 
-      <iframe class={styles.frame} src={`/view/${name}/0mp_/${url()}`} onLoad={frameLoad} ref={iframe}></iframe>
+      <iframe
+        class={styles.frame}
+        src={`/view/${name}/0mp_/${url()}`}
+        onLoad={frameLoad}
+        ref={iframe}
+      ></iframe>
     </div>
   );
 }
