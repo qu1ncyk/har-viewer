@@ -1,7 +1,7 @@
 /// <reference lib="WebWorker" />
 declare const self: ServiceWorkerGlobalScope;
 
-export { };
+import { view } from "./view";
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();
@@ -11,10 +11,10 @@ self.addEventListener("activate", (event) => {
   event.waitUntil(self.clients.claim());
 });
 
-self.addEventListener("fetch", (event) => {
+self.addEventListener("fetch", async (event) => {
   const request = event.request;
   const url = new URL(request.url);
-  if (url.pathname === "/test-sw") {
-    event.respondWith(new Response("ok"));
+  if (url.pathname.startsWith("/view/")) {
+    event.respondWith(view(url));
   }
 });

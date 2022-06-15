@@ -21,7 +21,10 @@ export async function insert(har: Har, name: string) {
   const pagesStore = pagesTx.store;
   let promises: Promise<any>[] = [pagesTx.done];
   for (let i = 0; i < pages.length; i++) {
-    promises.push(pagesStore.put(pages[i].title, pages[i].id));
+    const pageUrl = entries.find(x => x.pageref === pages[i].id)?.request.url;
+    promises.push(
+      pagesStore.put({ title: pages[i].title, url: pageUrl }, pages[i].id)
+    );
   }
 
   const entriesTx = collection.transaction("entries", "readwrite");

@@ -19,21 +19,26 @@ export interface HeadersObject {
   [name: string]: string;
 }
 
+export interface Entry {
+  id: string;
+  url: string;
+  content: ArrayBuffer;
+  requestHeaders: HeadersObject;
+  responseHeaders: HeadersObject;
+  status: number;
+  time: Date;
+}
+
 interface Collection extends DBSchema {
   pages: {
     key: string; // id
-    value: string; // title
+    value: {
+      title: string;
+      url?: string;
+    };
   };
   entries: {
-    value: {
-      id: string;
-      url: string;
-      content: ArrayBuffer;
-      requestHeaders: HeadersObject;
-      responseHeaders: HeadersObject;
-      status: number;
-      time: Date;
-    };
+    value: Entry;
     key: [string, Date]; // [url, time]
     indexes: { "by-id": string; };
   }

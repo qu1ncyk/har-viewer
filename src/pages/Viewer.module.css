@@ -1,0 +1,36 @@
+.container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.topBar {
+  background-color: #eee;
+  display: flex;
+  padding: 0.5em;
+  gap: 0.4em;
+}
+
+.iconButton {
+  background-color: transparent;
+  border-width: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+.iconButton:hover {
+  background-color: #e2e2e2;
+}
+
+.iconButton:active {
+  color: #a50;
+}
+
+.input {
+  flex-grow: 1;
+}
+
+.frame {
+  flex-grow: 1;
+  border-width: 0;
+}

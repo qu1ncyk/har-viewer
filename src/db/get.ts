@@ -16,7 +16,11 @@ export async function pages(collectionName: string) {
   const tx = collection.transaction("pages");
   const store = tx.store;
 
-  const [id, title] =
-    await Promise.all([store.getAllKeys(), store.getAll(), tx.done]);
-  return zip(id, title);
+  const [pages] = await Promise.all([store.getAll(), tx.done]);
+  return pages.filter(x => x.url);
+}
+
+export async function entries(collectionName: string) {
+  const collection = await openCollection(collectionName);
+  return collection.getAll("entries");
 }

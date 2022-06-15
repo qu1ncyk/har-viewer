@@ -1,5 +1,6 @@
 import sw from "service-worker?url";
 import { sleep } from "../utils";
+import { receiveAction } from "./receiveAction";
 
 /**
  * When this resolves, the service worker can intercept requests.
@@ -22,7 +23,9 @@ export async function register() {
       try {
         // execute waitForController with a time limit of 100 ms
         await Promise.race([waitForController(), sleep(100, true)]);
+
         // success
+        receiveAction();
         return;
       } catch (e) {
         // try again
