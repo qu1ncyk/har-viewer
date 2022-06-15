@@ -5,3 +5,9 @@
 .pageName {
   composes: collectionName from "./Home.module.css";
 }
+
+.back {
+  position: absolute;
+  top: 0.5em;
+  left: 0.5em;
+}
