@@ -1,6 +1,7 @@
 // This file contains parts that are borrowed from
 // https://github.com/webrecorder/wabac.js under AGPLv3+
 
+import { viewExtractUrl } from "../../utils";
 import { rewriteUrl } from "../rewriteUrl";
 import { rewriteStyleAttribute, rewriteStyleElement } from "./rewriteCss";
 import { rewriteJs } from "./rewriteJs";
@@ -47,10 +48,14 @@ export function rewriteHtml(html: string, url: string, collection: string) {
 
   // list of tags with URLs:
   // https://stackoverflow.com/questions/2725156/complete-list-of-html-tag-attributes-which-have-a-url-value
+  rewriteAttribute("base", "href", "mp_");
+  let base = dom.querySelector("base");
+  if (base)
+    url = viewExtractUrl(base.href);
+
   rewriteAttribute("a", "href", "mp_");
   rewriteAttribute("applet", "codebase", "oe_");
   rewriteAttribute("area", "href", "mp_");
-  rewriteAttribute("base", "href", "mp_");
   rewriteAttribute("blockquote", "cite", "mp_");
   rewriteAttribute("body", "background", "im_");
   rewriteAttribute("del", "cite", "mp_");
