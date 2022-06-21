@@ -24,3 +24,8 @@ export async function entries(collectionName: string) {
   const collection = await openCollection(collectionName);
   return collection.getAll("entries");
 }
+
+export async function entriesStore(collectionName: string) {
+  const collection = await openCollection(collectionName);
+  return collection.transaction("entries").store;
+}

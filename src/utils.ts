@@ -38,3 +38,7 @@ export function viewerExtractUrl(url: string) {
 export function viewExtractUrl(url: string) {
   return new URL(url, location.href).pathname.split("/").slice(4).join("/");
 }
+
+export function last<T>(array: T[]) {
+  return array[array.length - 1];
+}
