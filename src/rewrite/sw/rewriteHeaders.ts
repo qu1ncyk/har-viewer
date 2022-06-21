@@ -5,6 +5,9 @@ export function rewriteHeaders(headers: Headers, url: string, collection: string
   if (location)
     headers.set("Location", rewriteUrl(location, url, collection, "mp_"));
 
-  if (headers.get("Content-Security-Policy"))
-    headers.delete("Content-Security-Policy");
+  const removedHeaders = ["Content-Security-Policy", "X-Frame-Options"];
+  removedHeaders.forEach(headerName => {
+    if (headers.get(headerName))
+      headers.delete(headerName);
+  });
 }
