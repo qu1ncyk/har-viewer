@@ -6,8 +6,18 @@ import { last } from "../utils";
  * @param requestedUrl The URL that has been requested
  * @param otherUrl A URL from the collection
  */
-export function matchScore(requestedUrl: string, otherUrl: string) {
+export function matchScore(requestedUrl: URL, otherUrl: URL) {
+  let score = 0;
 
+  score += paramsScore(requestedUrl.searchParams, otherUrl.searchParams);
+  score += pathnameScore(requestedUrl.pathname, otherUrl.pathname);
+
+  if (requestedUrl.protocol !== otherUrl.protocol)
+    score += 10;
+  if (requestedUrl.host !== otherUrl.host)
+    score += 20;
+
+  return score;
 }
 
 /**
