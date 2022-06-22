@@ -79,12 +79,12 @@ const Viewer: Component = () => {
           <Feather icon={icons["refresh-cw"]} />
         </button>
         <form id="url-bar" onSubmit={submitHandler} />
-        <input class={styles.input} form="url-bar" type="url" value={url()} ref={input} />
+        <input class={styles.input} form="url-bar" type="url" value={iframeSrc()} ref={input} />
       </div>
 
       <iframe
         class={styles.frame}
-        src={`/view/${name}/0mp_/${url()}`}
+        src={`/view/${name}/0mp_/${iframeSrc()}`}
         onLoad={frameLoad}
         ref={iframe}
       ></iframe>

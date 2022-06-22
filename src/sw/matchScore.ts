@@ -9,7 +9,7 @@ import { last } from "../utils";
 export function matchScore(requestedUrl: URL, otherUrl: URL) {
   let score = 0;
 
-  score += paramsScore(requestedUrl.searchParams, otherUrl.searchParams);
+  score += paramsScore(requestedUrl.searchParams, otherUrl.searchParams) / 10;
   score += pathnameScore(requestedUrl.pathname, otherUrl.pathname);
 
   if (requestedUrl.protocol !== otherUrl.protocol)

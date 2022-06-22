@@ -31,12 +31,14 @@ export function noun(noun: string, plural: boolean) {
 
 // /viewer/:collection/*url
 export function viewerExtractUrl(url: string) {
-  return new URL(url, location.href).pathname.split("/").slice(3).join("/");
+  const urlObject = new URL(url, location.href);
+  return urlObject.pathname.split("/").slice(3).join("/") + urlObject.search;
 }
 
 // /view/:collection/:time/*url
 export function viewExtractUrl(url: string) {
-  return new URL(url, location.href).pathname.split("/").slice(4).join("/");
+  const urlObject = new URL(url, location.href);
+  return urlObject.pathname.split("/").slice(4).join("/") + urlObject.search;
 }
 
 export function last<T>(array: T[]) {
