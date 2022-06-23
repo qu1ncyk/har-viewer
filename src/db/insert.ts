@@ -34,7 +34,8 @@ export async function insert(har: Har, name: string) {
     const entry = entries[i];
 
     const requestHeaders = rewriteHeaders(entry.request.headers);
-    const responseHeaders = rewriteHeaders(entry.response.headers);
+    let setCookie: string[] = [];
+    const responseHeaders = rewriteHeaders(entry.response.headers, setCookie);
 
     const sourceContent = entry.response.content;
     let content: ArrayBuffer;
@@ -52,6 +53,7 @@ export async function insert(har: Har, name: string) {
       url: entry.request.url,
       requestHeaders,
       responseHeaders,
+      setCookie,
       status: entry.response.status,
       content,
       time: new Date(entry.startedDateTime)
@@ -65,11 +67,13 @@ export async function insert(har: Har, name: string) {
 }
 
 type InputHeaders = Array<{ name: string; value: string; }>;
-function rewriteHeaders(headers: InputHeaders): HeadersObject {
+function rewriteHeaders(headers: InputHeaders, setCookie?: string[]): HeadersObject {
   let outputHeaders: HeadersObject = {};
   for (let i = 0; i < headers.length; i++) {
+    if (headers[i].name.toLowerCase() === "set-cookie" && setCookie)
+      setCookie.push(headers[i].value);
     // Chrome adds "headers" like :method and :scheme
-    if (!headers[i].name.startsWith(":"))
+    else if (!headers[i].name.startsWith(":"))
       outputHeaders[headers[i].name] = headers[i].value;
   }
   return outputHeaders;

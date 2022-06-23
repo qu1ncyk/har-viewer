@@ -1,6 +1,7 @@
 import type { Entry } from "../../db/db";
 import { sendAction } from "../../sw/sendAction";
 import { rewriteHeaders } from "./rewriteHeaders";
+import { rewriteSetCookie } from "./rewriteSetCookie";
 
 /**
  * Rewrites the URLs in the given file, according to the modifier in the time.
@@ -19,6 +20,10 @@ export async function rewrite(entry?: Entry, time?: string, collection?: string)
   const { url, status } = entry;
   let content: ArrayBuffer | string = entry.content;
   let headers = new Headers(entry.responseHeaders);
+
+  // Set-Cookie can't be set in Headers
+  const cookies = rewriteSetCookie(entry.setCookie, entry.time);
+  setCookies(cookies);
 
   const decoder = new TextDecoder();
   const modifier = time?.slice(-3);
@@ -68,4 +73,8 @@ function rewriteCss(css: string, url: string, collection: string) {
 
 function rewriteJs(js: string, url: string, collection: string) {
   return sendAction("rewrite js", { js, url, collection }) as Promise<string>;
+}
+
+function setCookies(cookies: string[]) {
+  return sendAction("set cookies", { cookies }) as Promise<void>;
 }

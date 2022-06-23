@@ -25,6 +25,7 @@ export interface Entry {
   content: ArrayBuffer;
   requestHeaders: HeadersObject;
   responseHeaders: HeadersObject;
+  setCookie: string[];
   status: number;
   time: Date;
 }
