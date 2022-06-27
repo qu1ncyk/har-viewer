@@ -140,7 +140,7 @@ export function rewriteHtml(html: string, url: string, collection: string, time:
     request_ts: 0,
     prefix: `${location.origin}/view/${encodedCollection}/`,
     mod: "mp_",
-    is_framed: false,
+    is_framed: true,
     is_live: false,
     coll: collection,
     proxy_magic: "",
