@@ -79,7 +79,7 @@ const Viewer: Component = () => {
           <Feather icon={icons["refresh-cw"]} />
         </button>
         <form id="url-bar" onSubmit={submitHandler} />
-        <input class={styles.input} form="url-bar" type="url" value={iframeSrc()} ref={input} />
+        <input class={styles.input} form="url-bar" type="url" value={url()} ref={input} />
       </div>
 
       <iframe
