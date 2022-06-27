@@ -12,7 +12,7 @@ export function receiveAction() {
 
     try {
       if (action === "rewrite html")
-        result = rewriteHtml(data.html, data.url, data.collection);
+        result = rewriteHtml(data.html, data.url, data.collection, data.time);
       else if (action === "rewrite css")
         result = rewriteCss(data.css, data.url, data.collection);
       else if (action === "rewrite js")

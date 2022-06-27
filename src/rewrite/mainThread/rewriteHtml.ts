@@ -6,7 +6,7 @@ import { rewriteUrl } from "../rewriteUrl";
 import { rewriteStyleAttribute, rewriteStyleElement } from "./rewriteCss";
 import { rewriteJs } from "./rewriteJs";
 
-export function rewriteHtml(html: string, url: string, collection: string) {
+export function rewriteHtml(html: string, url: string, collection: string, time: number) {
   const parser = new DOMParser();
   const dom = parser.parseFromString(html, "text/html");
 
@@ -148,12 +148,11 @@ export function rewriteHtml(html: string, url: string, collection: string) {
     enable_auto_fetch: true,
     isSW: true,
     wombat_ts: 0,
-    wombat_sec: 0,
+    wombat_sec: time,
     wombat_scheme: new URL(url).protocol.replace(":", ""),
     wombat_host: new URL(url).host,
     wombat_opts: {}
   };
-  console.log(wombatConfig);
 
   dom.head.insertAdjacentHTML("afterbegin", `
     <script src="https://cdn.jsdelivr.net/npm/@webrecorder/wombat@3.3.6/dist/wombat.js"></script>

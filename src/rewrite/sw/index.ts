@@ -29,7 +29,7 @@ export async function rewrite(entry?: Entry, time?: string, collection?: string)
   const modifier = time?.slice(-3);
   switch (getFileType(modifier, headers)) {
     case "html":
-      content = await rewriteHtml(decoder.decode(content), url, collection);
+      content = await rewriteHtml(decoder.decode(content), url, collection, entry.time.getTime() / 1000);
       break;
     case "css":
       content = await rewriteCss(decoder.decode(content), url, collection);
@@ -62,9 +62,9 @@ function getFileType(modifier: string, headers: Headers) {
   }
 }
 
-function rewriteHtml(html: string, url: string, collection: string) {
+function rewriteHtml(html: string, url: string, collection: string, time: number) {
   // the actual code for the rewriter is executed at the main thread
-  return sendAction("rewrite html", { html, url, collection }) as Promise<string>;
+  return sendAction("rewrite html", { html, url, collection, time }) as Promise<string>;
 }
 
 function rewriteCss(css: string, url: string, collection: string) {
