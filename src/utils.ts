@@ -32,13 +32,13 @@ export function noun(noun: string, plural: boolean) {
 // /viewer/:collection/*url
 export function viewerExtractUrl(url: string) {
   const urlObject = new URL(url, location.href);
-  return urlObject.pathname.split("/").slice(3).join("/") + urlObject.search;
+  return urlObject.pathname.split("/").slice(3).join("/") + urlObject.search + urlObject.hash;
 }
 
 // /view/:collection/:time/*url
 export function viewExtractUrl(url: string) {
   const urlObject = new URL(url, location.href);
-  return urlObject.pathname.split("/").slice(4).join("/") + urlObject.search;
+  return urlObject.pathname.split("/").slice(4).join("/") + urlObject.search + urlObject.hash;
 }
 
 export function last<T>(array: T[]) {
