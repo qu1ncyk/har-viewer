@@ -57,7 +57,7 @@ function getFileType(modifier: string, headers: Headers) {
         return "html";
       else if (contentType?.startsWith("text/css"))
         return "css";
-      else if (contentType?.startsWith("text/javascript"))
+      else if (contentType?.startsWith("text/javascript") || contentType?.startsWith("application/javascript"))
         return "js";
   }
 }
