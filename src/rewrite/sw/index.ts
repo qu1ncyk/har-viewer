@@ -18,24 +18,29 @@ export async function rewrite(entry?: Entry, time?: string, collection?: string)
     });
 
   const { url, status } = entry;
-  let content: ArrayBuffer | string = entry.content;
+  let content: ArrayBuffer | string | null = entry.content;
   let headers = new Headers(entry.responseHeaders);
 
   // Set-Cookie can't be set in Headers
   const cookies = rewriteSetCookie(entry.setCookie, entry.time);
   setCookies(cookies);
 
-  const decoder = new TextDecoder();
-  const modifier = time?.slice(-3);
-  switch (getFileType(modifier, headers)) {
-    case "html":
-      content = await rewriteHtml(decoder.decode(content), url, collection, entry.time.getTime() / 1000);
-      break;
-    case "css":
-      content = await rewriteCss(decoder.decode(content), url, collection);
-      break;
-    case "js":
-      content = await rewriteJs(decoder.decode(content), url, collection);
+  // HTTP 204 No Content
+  if (status === 204) {
+    content = null;
+  } else {
+    const decoder = new TextDecoder();
+    const modifier = time?.slice(-3);
+    switch (getFileType(modifier, headers)) {
+      case "html":
+        content = await rewriteHtml(decoder.decode(content), url, collection, entry.time.getTime() / 1000);
+        break;
+      case "css":
+        content = await rewriteCss(decoder.decode(content), url, collection);
+        break;
+      case "js":
+        content = await rewriteJs(decoder.decode(content), url, collection);
+    }
   }
 
   rewriteHeaders(headers, url, collection);
