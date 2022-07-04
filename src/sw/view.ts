@@ -8,7 +8,10 @@ export async function view(url: URL) {
   const pathParts = url.pathname.split("/");
   let [, , collection, time, ...originalUrlArray] = pathParts;
   collection = decodeURIComponent(collection);
-  const originalUrl = originalUrlArray.join("/") + url.search;
+  let originalUrl = originalUrlArray.join("/") + url.search;
+
+  if (originalUrl.startsWith("//"))
+    originalUrl = "https:" + originalUrl;
 
   const store = await get.entriesStore(collection);
   let lowestScore = Infinity;
