@@ -12,8 +12,6 @@ export function matchScore(requestedUrl: URL, otherUrl: URL) {
   score += paramsScore(requestedUrl.searchParams, otherUrl.searchParams) / 10;
   score += pathnameScore(requestedUrl.pathname, otherUrl.pathname);
 
-  if (requestedUrl.protocol !== otherUrl.protocol)
-    score += 10;
   if (requestedUrl.host !== otherUrl.host)
     score += 20;
 
