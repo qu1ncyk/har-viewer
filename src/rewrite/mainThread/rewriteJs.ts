@@ -23,7 +23,7 @@ export function rewriteJs(js: string, url: string, collection: string) {
       .map(x => `let ${x} = _____WB$wombat$assign$function_____("${x}");`)
       .join("\n")}
 
-      let arguments;
+      // let arguments;
 
       ${js}
     }
