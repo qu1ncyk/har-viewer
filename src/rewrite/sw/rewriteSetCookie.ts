@@ -2,7 +2,6 @@ export function rewriteSetCookie(cookies: string[], snapTime: Date) {
   return cookies.map(cookieString => {
     try {
       const cookie = parseSetCookie(cookieString);
-      console.log({ cookieString, cookie });
       if (!cookie.maxAge && cookie.expires) {
         cookie.maxAge = Math.round((cookie.expires.getTime() - snapTime.getTime()) / 1000);
         cookie.expires = undefined;

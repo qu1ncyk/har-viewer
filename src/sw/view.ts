@@ -25,13 +25,5 @@ export async function view(url: URL) {
     }
   }
 
-  if (lowestScore !== 0)
-    console.log({
-      originalUrl,
-      otherUrl: bestMatch?.url,
-      lowestScore,
-      allUrls: (await get.entries(collection)).map(x => x.url)
-    });
-
   return await rewrite(bestMatch, time, collection);
 }
