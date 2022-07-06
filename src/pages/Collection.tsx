@@ -23,7 +23,14 @@ const Collection: Component = () => {
         <ul class={styles.list}>
           <For each={pages()}>{(page) =>
             <li>
-              <Link href={`/viewer/${encodedName}/${page.url}`} class={styles.pageName}>{page.title}</Link>
+              {/* the `Link` component removes trailing slashes, which should stay */}
+              <a
+                rel="external"
+                href={`/viewer/${encodedName}/${page.url}`}
+                class={styles.pageName}
+              >
+                {page.title}
+              </a>
             </li>
           }</For>
         </ul>

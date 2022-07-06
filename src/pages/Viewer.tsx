@@ -10,8 +10,8 @@ const Viewer: Component = () => {
   const { name } = useParams();
 
   // `useParams()` removes some slashes, so I extract the url myself instead
-  const { pathname } = useLocation();
-  const [iframeSrc, setIframeSrc] = createSignal(viewerExtractUrl(pathname));
+  const { pathname, search, hash } = new URL(location.href)
+  const [iframeSrc, setIframeSrc] = createSignal(viewerExtractUrl(pathname + search + hash));
 
   /* When the url changes in the iframe window, the url in the input field and
      url should change, but the `src` attribute of the `iframe` should not. But
