@@ -2,6 +2,7 @@ import type { Entry } from "../../db/db";
 import { sendAction } from "../../sw/sendAction";
 import { rewriteHeaders } from "./rewriteHeaders";
 import { rewriteSetCookie } from "./rewriteSetCookie";
+import { rewriteWorker } from "./rewriteWorker";
 
 /**
  * Rewrites the URLs in the given file, according to the modifier in the time.
@@ -30,7 +31,7 @@ export async function rewrite(entry?: Entry, time?: string, collection?: string)
     content = null;
   } else {
     const decoder = new TextDecoder();
-    const modifier = time?.slice(-3);
+    const modifier = time?.replace(/\d/g, "");
     switch (getFileType(modifier, headers)) {
       case "html":
         content = await rewriteHtml(decoder.decode(content), url, collection, entry.time.getTime() / 1000);
@@ -40,6 +41,10 @@ export async function rewrite(entry?: Entry, time?: string, collection?: string)
         break;
       case "js":
         content = await rewriteJs(decoder.decode(content), url, collection);
+        break;
+      case "worker":
+        content = rewriteWorker(decoder.decode(content), url, collection);
+        break;
     }
   }
 
@@ -55,6 +60,8 @@ function getFileType(modifier: string, headers: Headers) {
       return "css";
     case "js_":
       return "js";
+    case "wkr_":
+      return "worker";
     case "id_":
       return undefined;
     default:
