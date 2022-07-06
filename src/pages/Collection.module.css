@@ -11,3 +11,12 @@
   top: 0.5em;
   left: 0.5em;
 }
+
+.delete {
+  background-color: transparent;
+  border-width: 0;
+  /* the icon is 24*24 */
+  transform: scale(calc(18 / 24));
+  vertical-align: middle;
+  cursor: pointer;
+}

@@ -1,16 +1,18 @@
-import { Link, useParams } from "solid-app-router";
+import { Link, useNavigate, useParams } from "solid-app-router";
 import { Component, createResource, For, Show } from "solid-js";
 import { icons } from "feather-icons";
 
 import styles from "./Collection.module.css";
-import { get } from "../db";
+import { get, deleteCollection } from "../db";
 import { noun } from "../utils";
 import Feather from "../Feather";
+import { refetch } from "./Home";
 
 const Collection: Component = () => {
   const encodedName = useParams().name;
   const name = decodeURIComponent(encodedName);
   const [pages] = createResource(name, get.pages);
+  const navigate = useNavigate();
 
   return (
     <>
@@ -19,7 +21,16 @@ const Collection: Component = () => {
         <Feather icon={icons.x} />
       </Link>
       <Show when={!pages.loading} fallback={<p>Loading...</p>}>
-        <p>Found {pages()?.length} {noun("page", pages()?.length !== 1)} in {name}</p>
+        <div>
+          <span>Found {pages()?.length} {noun("page", pages()?.length !== 1)} in {name}</span>
+          <button class={styles.delete} onClick={() => {
+            deleteCollection(name);
+            navigate("/");
+            refetch();
+          }}>
+            <Feather icon={icons["trash-2"]} />
+          </button>
+        </div>
         <ul class={styles.list}>
           <For each={pages()}>{(page) =>
             <li>

@@ -7,6 +7,7 @@ import { insert, get } from "../db";
 import styles from "./Home.module.css";
 
 const [collections, { refetch }] = createResource(get.collections);
+export { refetch };
 
 const Home: Component = () => {
   return (
