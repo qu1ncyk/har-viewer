@@ -3,7 +3,10 @@ import { openDB, DBSchema } from "idb/with-async-ittr";
 interface Collections extends DBSchema {
   collections: {
     key: string; // collection name
-    value: Date;
+    value: {
+      time: Date;
+      size: number;
+    };
   }
 }
 

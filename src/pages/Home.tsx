@@ -2,7 +2,7 @@ import { Component, createResource, For, Show } from "solid-js";
 import type { Har } from "har-format";
 import { Link } from "solid-app-router";
 
-import { readFile } from "../utils";
+import { formatSize, readFile } from "../utils";
 import { insert, get } from "../db";
 import styles from "./Home.module.css";
 
@@ -16,10 +16,11 @@ const Home: Component = () => {
       <input type="file" accept=".har, application/json" onInput={upload} />
       <Show when={!collections.loading} fallback={<p>Loading...</p>}>
         <ul class={styles.list}>
-          <For each={collections()}>{([name, time]) =>
+          <For each={collections()}>{([name, value]) =>
             <li>
               <Link href={collectionUrl(name)} class={styles.collectionName}>{name}</Link>
-              <p class={styles.subtitle}>Snapshot taken at {time.toLocaleString()}</p>
+              <p class={styles.subtitle}>Snapshot taken at {value.time.toLocaleString()}</p>
+              <p class={styles.subtitle}>{formatSize(value.size)}</p>
             </li>
           }</For>
         </ul>

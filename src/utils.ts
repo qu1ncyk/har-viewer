@@ -44,3 +44,15 @@ export function viewExtractUrl(url: string) {
 export function last<T>(array: T[]) {
   return array[array.length - 1];
 }
+
+export function formatSize(size: number) {
+  const units = ["kB", "MB", "GB", "TB"];
+  let unit = "B";
+  for (let i = 0; i < units.length; i++) {
+    if (size >= 1000) {
+      size /= 1024;
+      unit = units[i];
+    }
+  }
+  return `${size.toFixed(2)} ${unit}`;
+}
