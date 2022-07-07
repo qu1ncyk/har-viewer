@@ -63,8 +63,10 @@ const Viewer: Component = () => {
     };
   }
 
+  const [topBarHidden, setTopBarHidden] = createSignal(false);
+
   return (
-    <div class={styles.container}>
+    <div class={styles.container} classList={{ [styles.topBarHidden]: topBarHidden() }}>
       <div class={styles.topBar}>
         <Link href={`/collection/${name}`} class={styles.iconButton}>
           <Feather icon={icons.x} />
@@ -80,6 +82,9 @@ const Viewer: Component = () => {
         </button>
         <form id="url-bar" onSubmit={submitHandler} />
         <input class={styles.input} form="url-bar" type="url" value={url()} ref={input} />
+        <button class={styles.hideButton} onClick={() => setTopBarHidden(x => !x)}>
+          <Feather icon={icons["chevron-up"]} />
+        </button>
       </div>
 
       <iframe

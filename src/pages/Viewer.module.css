@@ -9,6 +9,14 @@
   display: flex;
   padding: 0.5em;
   gap: 0.4em;
+  height: calc((28 / 16 * 1em));
+  transition: all 0.5s;
+  overflow: hidden;
+}
+
+.container.topBarHidden .topBar {
+  height: 0;
+  padding: 0;
 }
 
 .iconButton {
@@ -24,6 +32,18 @@
 
 .iconButton:active {
   color: #a50;
+}
+
+.hideButton {
+  composes: iconButton;
+  transition: transform 0.5s;
+}
+
+.container.topBarHidden .hideButton {
+  position: fixed;
+  transform: rotate(180deg);
+  top: 0;
+  right: 0;
 }
 
 .input {
