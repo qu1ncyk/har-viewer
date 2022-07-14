@@ -3,7 +3,10 @@ import { openDB, DBSchema } from "idb/with-async-ittr";
 interface Collections extends DBSchema {
   collections: {
     key: string; // collection name
-    value: Date;
+    value: {
+      time: Date;
+      size: number;
+    };
   }
 }
 
@@ -25,6 +28,7 @@ export interface Entry {
   content: ArrayBuffer;
   requestHeaders: HeadersObject;
   responseHeaders: HeadersObject;
+  setCookie: string[];
   status: number;
   time: Date;
 }

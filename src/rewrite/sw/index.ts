@@ -1,6 +1,8 @@
 import type { Entry } from "../../db/db";
 import { sendAction } from "../../sw/sendAction";
 import { rewriteHeaders } from "./rewriteHeaders";
+import { rewriteSetCookie } from "./rewriteSetCookie";
+import { rewriteWorker } from "./rewriteWorker";
 
 /**
  * Rewrites the URLs in the given file, according to the modifier in the time.
@@ -17,20 +19,33 @@ export async function rewrite(entry?: Entry, time?: string, collection?: string)
     });
 
   const { url, status } = entry;
-  let content: ArrayBuffer | string = entry.content;
+  let content: ArrayBuffer | string | null = entry.content;
   let headers = new Headers(entry.responseHeaders);
 
-  const decoder = new TextDecoder();
-  const modifier = time?.slice(-3);
-  switch (getFileType(modifier, headers)) {
-    case "html":
-      content = await rewriteHtml(decoder.decode(content), url, collection);
-      break;
-    case "css":
-      content = await rewriteCss(decoder.decode(content), url, collection);
-      break;
-    case "js":
-      content = await rewriteJs(decoder.decode(content), url, collection);
+  // Set-Cookie can't be set in Headers
+  const cookies = rewriteSetCookie(entry.setCookie, entry.time);
+  setCookies(cookies);
+
+  // HTTP 204 No Content
+  if (status === 204) {
+    content = null;
+  } else {
+    const decoder = new TextDecoder();
+    const modifier = time?.replace(/\d/g, "");
+    switch (getFileType(modifier, headers)) {
+      case "html":
+        content = await rewriteHtml(decoder.decode(content), url, collection, entry.time.getTime() / 1000);
+        break;
+      case "css":
+        content = await rewriteCss(decoder.decode(content), url, collection);
+        break;
+      case "js":
+        content = await rewriteJs(decoder.decode(content), url, collection);
+        break;
+      case "worker":
+        content = rewriteWorker(decoder.decode(content), url, collection);
+        break;
+    }
   }
 
   rewriteHeaders(headers, url, collection);
@@ -45,6 +60,8 @@ function getFileType(modifier: string, headers: Headers) {
       return "css";
     case "js_":
       return "js";
+    case "wkr_":
+      return "worker";
     case "id_":
       return undefined;
     default:
@@ -52,14 +69,14 @@ function getFileType(modifier: string, headers: Headers) {
         return "html";
       else if (contentType?.startsWith("text/css"))
         return "css";
-      else if (contentType?.startsWith("text/javascript"))
+      else if (contentType?.startsWith("text/javascript") || contentType?.startsWith("application/javascript"))
         return "js";
   }
 }
 
-function rewriteHtml(html: string, url: string, collection: string) {
+function rewriteHtml(html: string, url: string, collection: string, time: number) {
   // the actual code for the rewriter is executed at the main thread
-  return sendAction("rewrite html", { html, url, collection }) as Promise<string>;
+  return sendAction("rewrite html", { html, url, collection, time }) as Promise<string>;
 }
 
 function rewriteCss(css: string, url: string, collection: string) {
@@ -68,4 +85,8 @@ function rewriteCss(css: string, url: string, collection: string) {
 
 function rewriteJs(js: string, url: string, collection: string) {
   return sendAction("rewrite js", { js, url, collection }) as Promise<string>;
+}
+
+function setCookies(cookies: string[]) {
+  return sendAction("set cookies", { cookies }) as Promise<void>;
 }

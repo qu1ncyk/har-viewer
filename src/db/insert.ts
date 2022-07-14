@@ -4,6 +4,8 @@ import { decode as decodeBase64 } from "base64-arraybuffer";
 import { collectionsDb, openCollection, HeadersObject } from "./db";
 
 export async function insert(har: Har, name: string) {
+  let size = 0;
+
   const pages = har.log.pages;
   if (!pages || pages.length === 0)
     throw new Error("Har file does not contain page");
@@ -21,10 +23,12 @@ export async function insert(har: Har, name: string) {
   const pagesStore = pagesTx.store;
   let promises: Promise<any>[] = [pagesTx.done];
   for (let i = 0; i < pages.length; i++) {
+    const title = pages[i].title;
     const pageUrl = entries.find(x => x.pageref === pages[i].id)?.request.url;
     promises.push(
-      pagesStore.put({ title: pages[i].title, url: pageUrl }, pages[i].id)
+      pagesStore.put({ title, url: pageUrl }, pages[i].id)
     );
+    size += title.length + (pageUrl?.length ?? 0);
   }
 
   const entriesTx = collection.transaction("entries", "readwrite");
@@ -34,7 +38,11 @@ export async function insert(har: Har, name: string) {
     const entry = entries[i];
 
     const requestHeaders = rewriteHeaders(entry.request.headers);
-    const responseHeaders = rewriteHeaders(entry.response.headers);
+    let setCookie: string[] = [];
+    const responseHeaders = rewriteHeaders(entry.response.headers, setCookie);
+
+    size += headersSize(requestHeaders) + headersSize(responseHeaders);
+    size += setCookie.join("").length;
 
     const sourceContent = entry.response.content;
     let content: ArrayBuffer;
@@ -47,11 +55,14 @@ export async function insert(har: Har, name: string) {
       content = u8.buffer;
     }
 
+    size += content.byteLength;
+
     promises.push(entriesStore.put({
       id: entry.pageref ?? "",
       url: entry.request.url,
       requestHeaders,
       responseHeaders,
+      setCookie,
       status: entry.response.status,
       content,
       time: new Date(entry.startedDateTime)
@@ -59,18 +70,28 @@ export async function insert(har: Har, name: string) {
   }
 
   const time = new Date(pages[0].startedDateTime);
-  collections.put("collections", time, name);
+  collections.put("collections", { time, size }, name);
 
   await Promise.all(promises);
 }
 
 type InputHeaders = Array<{ name: string; value: string; }>;
-function rewriteHeaders(headers: InputHeaders): HeadersObject {
+function rewriteHeaders(headers: InputHeaders, setCookie?: string[]): HeadersObject {
   let outputHeaders: HeadersObject = {};
   for (let i = 0; i < headers.length; i++) {
+    if (headers[i].name.toLowerCase() === "set-cookie" && setCookie)
+      setCookie.push(headers[i].value);
     // Chrome adds "headers" like :method and :scheme
-    if (!headers[i].name.startsWith(":"))
+    else if (!headers[i].name.startsWith(":"))
       outputHeaders[headers[i].name] = headers[i].value;
   }
   return outputHeaders;
+}
+
+function headersSize(headers: HeadersObject) {
+  let size = 0;
+  for (let headerName in headers) {
+    size += headerName.length + headers[headerName].length;
+  }
+  return size;
 }

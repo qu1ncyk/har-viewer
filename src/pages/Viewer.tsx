@@ -10,8 +10,8 @@ const Viewer: Component = () => {
   const { name } = useParams();
 
   // `useParams()` removes some slashes, so I extract the url myself instead
-  const { pathname } = useLocation();
-  const [iframeSrc, setIframeSrc] = createSignal(viewerExtractUrl(pathname));
+  const { pathname, search, hash } = new URL(location.href)
+  const [iframeSrc, setIframeSrc] = createSignal(viewerExtractUrl(pathname + search + hash));
 
   /* When the url changes in the iframe window, the url in the input field and
      url should change, but the `src` attribute of the `iframe` should not. But
@@ -63,8 +63,10 @@ const Viewer: Component = () => {
     };
   }
 
+  const [topBarHidden, setTopBarHidden] = createSignal(false);
+
   return (
-    <div class={styles.container}>
+    <div class={styles.container} classList={{ [styles.topBarHidden]: topBarHidden() }}>
       <div class={styles.topBar}>
         <Link href={`/collection/${name}`} class={styles.iconButton}>
           <Feather icon={icons.x} />
@@ -80,11 +82,14 @@ const Viewer: Component = () => {
         </button>
         <form id="url-bar" onSubmit={submitHandler} />
         <input class={styles.input} form="url-bar" type="url" value={url()} ref={input} />
+        <button class={styles.hideButton} onClick={() => setTopBarHidden(x => !x)}>
+          <Feather icon={icons["chevron-up"]} />
+        </button>
       </div>
 
       <iframe
         class={styles.frame}
-        src={`/view/${name}/0mp_/${url()}`}
+        src={`/view/${name}/0mp_/${iframeSrc()}`}
         onLoad={frameLoad}
         ref={iframe}
       ></iframe>
