@@ -7,7 +7,7 @@ interface Collections extends DBSchema {
       time: Date;
       size: number;
     };
-  }
+  };
 }
 
 export const collectionsDb = openDB<Collections>("collections", 1, {
@@ -15,7 +15,7 @@ export const collectionsDb = openDB<Collections>("collections", 1, {
     if (oldVersion === 0) {
       db.createObjectStore("collections");
     }
-  }
+  },
 });
 
 export interface HeadersObject {
@@ -44,18 +44,46 @@ interface Collection extends DBSchema {
   entries: {
     value: Entry;
     key: [string, Date]; // [url, time]
-    indexes: { "by-id": string; };
-  }
+    indexes: { "by-id": string };
+  };
+  urls: {
+    key: string; // url
+    value: Date[];
+  };
 }
 
-export function openCollection(collection: string) {
-  return openDB<Collection>(`c:${collection}`, 1, {
+export async function openCollection(collection: string) {
+  let prevVersion: number | undefined;
+  const db = await openDB<Collection>(`c:${collection}`, 2, {
     upgrade(db, oldVersion) {
-      if (oldVersion === 0) {
-        db.createObjectStore("pages");
-        const entries = db.createObjectStore("entries", { keyPath: ["url", "time"] });
-        entries.createIndex("by-id", "id");
+      prevVersion = oldVersion;
+      switch (oldVersion) {
+        case 0:
+          db.createObjectStore("pages");
+          const entries = db.createObjectStore("entries", {
+            keyPath: ["url", "time"],
+          });
+          entries.createIndex("by-id", "id");
+        case 1:
+          db.createObjectStore("urls");
+      }
+    },
+  });
+
+  if (prevVersion === 1) {
+    // Copy the URLs from the `entries` store into the new `urls` store
+    const tx = db.transaction(["urls", "entries"], "readwrite");
+    const urls = tx.objectStore("urls");
+
+    for await (const entry of tx.objectStore("entries")) {
+      const times = await urls.get(entry.value.url);
+      if (times) {
+        await urls.put([...times, entry.value.time], entry.value.url);
+      } else {
+        await urls.add([entry.value.time], entry.value.url);
       }
     }
-  })
+  }
+
+  return db;
 }
