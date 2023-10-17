@@ -16,24 +16,23 @@ export async function insert(har: Har, name: string) {
 
   const textEncoder = new TextEncoder();
 
-  const [collection, collections] =
-    await Promise.all([openCollection(name), collectionsDb]);
+  const [collection, collections] = await Promise.all([
+    openCollection(name),
+    collectionsDb,
+  ]);
 
-  const pagesTx = collection.transaction("pages", "readwrite");
-  const pagesStore = pagesTx.store;
-  let promises: Promise<any>[] = [pagesTx.done];
+  const tx = collection.transaction(["pages", "entries", "urls"], "readwrite");
+  const pagesStore = tx.objectStore("pages");
+  let promises: Promise<any>[] = [tx.done];
   for (let i = 0; i < pages.length; i++) {
     const title = pages[i].title;
-    const pageUrl = entries.find(x => x.pageref === pages[i].id)?.request.url;
-    promises.push(
-      pagesStore.put({ title, url: pageUrl }, pages[i].id)
-    );
+    const pageUrl = entries.find((x) => x.pageref === pages[i].id)?.request.url;
+    promises.push(pagesStore.put({ title, url: pageUrl }, pages[i].id));
     size += title.length + (pageUrl?.length ?? 0);
   }
 
-  const entriesTx = collection.transaction("entries", "readwrite");
-  const entriesStore = entriesTx.store;
-  promises.push(entriesTx.done);
+  const entriesStore = tx.objectStore("entries");
+  const urlDates = new Map<string, Date[]>();
   for (let i = 0; i < entries.length; i++) {
     const entry = entries[i];
 
@@ -57,16 +56,29 @@ export async function insert(har: Har, name: string) {
 
     size += content.byteLength;
 
-    promises.push(entriesStore.put({
-      id: entry.pageref ?? "",
-      url: entry.request.url,
-      requestHeaders,
-      responseHeaders,
-      setCookie,
-      status: entry.response.status,
-      content,
-      time: new Date(entry.startedDateTime)
-    }));
+    const dates = urlDates.get(entry.request.url) ?? [];
+    urlDates.set(entry.request.url, [
+      ...dates,
+      new Date(entry.startedDateTime),
+    ]);
+
+    promises.push(
+      entriesStore.put({
+        id: entry.pageref ?? "",
+        url: entry.request.url,
+        requestHeaders,
+        responseHeaders,
+        setCookie,
+        status: entry.response.status,
+        content,
+        time: new Date(entry.startedDateTime),
+      }),
+    );
+  }
+
+  const urlsStore = tx.objectStore("urls");
+  for (let [key, value] of urlDates) {
+    promises.push(urlsStore.put(value, key));
   }
 
   const time = new Date(pages[0].startedDateTime);
@@ -75,8 +87,11 @@ export async function insert(har: Har, name: string) {
   await Promise.all(promises);
 }
 
-type InputHeaders = Array<{ name: string; value: string; }>;
-function rewriteHeaders(headers: InputHeaders, setCookie?: string[]): HeadersObject {
+type InputHeaders = Array<{ name: string; value: string }>;
+function rewriteHeaders(
+  headers: InputHeaders,
+  setCookie?: string[],
+): HeadersObject {
   let outputHeaders: HeadersObject = {};
   for (let i = 0; i < headers.length; i++) {
     if (headers[i].name.toLowerCase() === "set-cookie" && setCookie)

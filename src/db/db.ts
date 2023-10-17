@@ -76,12 +76,8 @@ export async function openCollection(collection: string) {
     const urls = tx.objectStore("urls");
 
     for await (const entry of tx.objectStore("entries")) {
-      const times = await urls.get(entry.value.url);
-      if (times) {
-        await urls.put([...times, entry.value.time], entry.value.url);
-      } else {
-        await urls.add([entry.value.time], entry.value.url);
-      }
+      const times = (await urls.get(entry.value.url)) ?? [];
+      await urls.put([...times, entry.value.time], entry.value.url);
     }
   }
 
