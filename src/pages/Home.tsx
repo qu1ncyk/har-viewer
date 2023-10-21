@@ -3,7 +3,7 @@ import type { Har } from "har-format";
 import { Link } from "solid-app-router";
 
 import { formatSize, readFile } from "../utils";
-import { insert, get } from "../db";
+import { Inserter, get } from "../db";
 import styles from "./Home.module.css";
 
 const [collections, { refetch }] = createResource(get.collections);
@@ -41,7 +41,7 @@ async function upload(event: InputEvent) {
 
     const filename = element.files?.[0].name ?? "";
 
-    await insert(obj as Har, filename);
+    await Inserter.insert(obj as Har, filename);
 
     refetch();
   } catch (e) {

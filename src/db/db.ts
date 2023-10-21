@@ -33,7 +33,7 @@ export interface Entry {
   time: Date;
 }
 
-interface Collection extends DBSchema {
+export interface Collection extends DBSchema {
   pages: {
     key: string; // id
     value: {
