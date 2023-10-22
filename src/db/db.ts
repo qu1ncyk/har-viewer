@@ -1,4 +1,4 @@
-import { openDB, DBSchema } from "idb/with-async-ittr";
+import { openDB, DBSchema, IDBPDatabase } from "idb/with-async-ittr";
 
 interface Collections extends DBSchema {
   collections: {
@@ -70,16 +70,45 @@ export async function openCollection(collection: string) {
     },
   });
 
+  await updateDb(db, collection, prevVersion);
+
+  return db;
+}
+
+/**
+ * Update the collection database version by updating the current values.
+ */
+async function updateDb(
+  db: IDBPDatabase<Collection>,
+  collection: string,
+  prevVersion?: number,
+) {
   if (prevVersion === 1) {
     // Copy the URLs from the `entries` store into the new `urls` store
     const tx = db.transaction(["urls", "entries"], "readwrite");
-    const urls = tx.objectStore("urls");
-
+    let urlDates = new Map<string, Date[]>();
     for await (const entry of tx.objectStore("entries")) {
-      const times = (await urls.get(entry.value.url)) ?? [];
-      await urls.put([...times, entry.value.time], entry.value.url);
+      const times = urlDates.get(entry.value.url) ?? [];
+      urlDates.set(entry.value.url, [...times, entry.value.time]);
     }
-  }
 
-  return db;
+    const urls = tx.objectStore("urls");
+    let grownSize = 0;
+    let promises: Promise<any>[] = [tx.done];
+    for (const [url, dates] of urlDates) {
+      promises.push(urls.put(dates, url));
+      grownSize += url.length + dates.length * 8;
+    }
+    await Promise.all(promises);
+
+    // Update the size for the extra stored URLs
+    const collections = await collectionsDb;
+    const collTx = collections.transaction("collections", "readwrite");
+    const oldValue = await collTx.store.get(collection);
+    if (oldValue)
+      await collTx.store.put(
+        { ...oldValue, size: oldValue.size + grownSize },
+        collection,
+      );
+  }
 }
