@@ -1,4 +1,5 @@
-import { openCollection, type Entry } from "../db/db";
+import type { IDBPObjectStore } from "idb/with-async-ittr";
+import { Collection, openCollection, type Entry } from "../db/db";
 import { rewrite } from "../rewrite/sw";
 import { matchScore } from "./matchScore";
 
@@ -20,32 +21,46 @@ export async function view(url: URL) {
   const { collectionName, originalUrl, time } = splitUrl(url);
   const objectStore = await openCollection(collectionName);
   const urlsStore = objectStore.transaction("urls").store;
-  let lowestScore = Infinity;
-  let bestMatch: [string, Date] | undefined;
-
-  const cached = matchCache.get(originalUrl + "/" + collectionName);
-
-  if (cached) {
-    bestMatch = cached;
-  } else {
-    for await (const cursor of urlsStore) {
-      const url = cursor.key;
-      const score = matchScore(new URL(originalUrl), new URL(url));
-      if (score < lowestScore) {
-        lowestScore = score;
-        bestMatch = [url, cursor.value[0]];
-      }
-    }
-
-    if (bestMatch)
-      matchCache.set(originalUrl + "/" + collectionName, bestMatch);
-  }
 
   let entry: Entry | undefined;
-  if (bestMatch) {
-    entry = await objectStore.get("entries", bestMatch);
+  let match = await getMatch(collectionName, originalUrl, urlsStore);
+  if (match) {
+    matchCache.set(originalUrl + "/" + collectionName, match);
+    entry = await objectStore.get("entries", match);
   }
   return await rewrite(entry, time, collectionName);
+}
+
+/**
+ * Find the URL that matches the best with a URL in the collection.
+ */
+async function getMatch(
+  collectionName: string,
+  originalUrl: string,
+  urlsStore: IDBPObjectStore<Collection, ["urls"], "urls", "readonly">,
+): Promise<[string, Date] | undefined> {
+  const cached = matchCache.get(originalUrl + "/" + collectionName);
+  if (cached) {
+    return cached;
+  }
+
+  let perfectMatch = await urlsStore.get(originalUrl);
+  if (perfectMatch) {
+    return [originalUrl, perfectMatch[0]];
+  }
+
+  let lowestScore = Infinity;
+  let bestMatch: [string, Date] | undefined;
+  for await (const cursor of urlsStore) {
+    const url = cursor.key;
+    const score = matchScore(new URL(originalUrl), new URL(url));
+    if (score < lowestScore) {
+      lowestScore = score;
+      bestMatch = [url, cursor.value[0]];
+    }
+  }
+
+  return bestMatch;
 }
 
 /**
