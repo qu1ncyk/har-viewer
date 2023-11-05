@@ -4,20 +4,31 @@ export function sleep(ms: number, throws = false): Promise<void> {
   });
 }
 
-export function readFile(element: HTMLInputElement): Promise<string> {
+/**
+ * Read a `file` as a `string`.
+ */
+export function readFile(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
-    const file = element.files?.[0];
-    if (!file) {
-      reject("Could not load the file");
-      return;
-    }
-
     const fileReader = new FileReader();
     fileReader.onerror = () => reject("Could not read the file");
     fileReader.onload = () => {
       resolve(fileReader.result as string);
     };
     fileReader.readAsText(file);
+  });
+}
+
+/**
+ * Read a `file` as an `ArrayBuffer`.
+ */
+export function readFileAsBytes(file: File): Promise<ArrayBuffer> {
+  return new Promise((resolve, reject) => {
+    const fileReader = new FileReader();
+    fileReader.onerror = () => reject("Could not read the file");
+    fileReader.onload = () => {
+      resolve(fileReader.result as ArrayBuffer);
+    };
+    fileReader.readAsArrayBuffer(file);
   });
 }
 
@@ -32,13 +43,21 @@ export function noun(noun: string, plural: boolean) {
 // /viewer/:collection/*url
 export function viewerExtractUrl(url: string) {
   const urlObject = new URL(url, location.href);
-  return urlObject.pathname.split("/").slice(3).join("/") + urlObject.search + urlObject.hash;
+  return (
+    urlObject.pathname.split("/").slice(3).join("/") +
+    urlObject.search +
+    urlObject.hash
+  );
 }
 
 // /view/:collection/:time/*url
 export function viewExtractUrl(url: string) {
   const urlObject = new URL(url, location.href);
-  return urlObject.pathname.split("/").slice(4).join("/") + urlObject.search + urlObject.hash;
+  return (
+    urlObject.pathname.split("/").slice(4).join("/") +
+    urlObject.search +
+    urlObject.hash
+  );
 }
 
 export function last<T>(array: T[]) {
