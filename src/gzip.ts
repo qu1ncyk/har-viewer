@@ -32,6 +32,14 @@ export async function decompressToJson(gzipped: BufferSource) {
 }
 
 /**
+ * Decompress a `BufferSource` to a decoded `ArrayBuffer`.
+ */
+export async function decompressToBytes(gzipped: BufferSource) {
+    const readable = decompressStreaming(gzipped);
+    return await new Response(readable).arrayBuffer();
+}
+
+/**
  * Compress a `BufferSource` to an `ArrayBuffer`.
  */
 export async function compressToBytes(decompressed: BufferSource) {
