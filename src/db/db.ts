@@ -1,4 +1,10 @@
-import { openDB, DBSchema, IDBPDatabase } from "idb/with-async-ittr";
+import {
+  openDB,
+  DBSchema,
+  IDBPDatabase,
+  IDBPTransaction,
+} from "idb/with-async-ittr";
+import * as gzip from "../gzip";
 
 interface Collections extends DBSchema {
   collections: {
@@ -26,6 +32,7 @@ export interface Entry {
   id: string;
   url: string;
   content: ArrayBuffer;
+  compressed: boolean;
   requestHeaders: HeadersObject;
   responseHeaders: HeadersObject;
   setCookie: string[];
@@ -85,21 +92,8 @@ async function updateDb(
 ) {
   if (prevVersion === 1) {
     // Copy the URLs from the `entries` store into the new `urls` store
-    const tx = db.transaction(["urls", "entries"], "readwrite");
-    let urlDates = new Map<string, Date[]>();
-    for await (const entry of tx.objectStore("entries")) {
-      const times = urlDates.get(entry.value.url) ?? [];
-      urlDates.set(entry.value.url, [...times, entry.value.time]);
-    }
-
-    const urls = tx.objectStore("urls");
-    let grownSize = 0;
-    let promises: Promise<any>[] = [tx.done];
-    for (const [url, dates] of urlDates) {
-      promises.push(urls.put(dates, url));
-      grownSize += url.length + dates.length * 8;
-    }
-    await Promise.all(promises);
+    let grownSize = await createUrlsStore(db);
+    grownSize += await compressContents(db);
 
     // Update the size for the extra stored URLs
     const collections = await collectionsDb;
@@ -111,4 +105,60 @@ async function updateDb(
         collection,
       );
   }
+}
+
+/**
+ * Create the `urls` store and fill it with every URL in `entries`.
+ * @return The estimated increase in size.
+ */
+async function createUrlsStore(db: IDBPDatabase<Collection>) {
+  const tx = db.transaction(["urls", "entries"], "readwrite");
+  let grownSize = 0;
+  let urlDates = new Map<string, Date[]>();
+  for await (const entry of tx.objectStore("entries")) {
+    const times = urlDates.get(entry.value.url) ?? [];
+    urlDates.set(entry.value.url, [...times, entry.value.time]);
+  }
+
+  const urls = tx.objectStore("urls");
+  let promises: Promise<any>[] = [tx.done];
+  for (const [url, dates] of urlDates) {
+    promises.push(urls.put(dates, url));
+    grownSize += url.length + dates.length * 8;
+  }
+  await Promise.all(promises);
+  return grownSize;
+}
+
+/**
+ * Compress the contents of each entry.
+ * @return The (negative) increase in size.
+ */
+async function compressContents(db: IDBPDatabase<Collection>) {
+  const readTx = db.transaction("entries");
+  let grownSize = 0;
+  let readPromises = [readTx.done];
+  let updates: Entry[] = [];
+
+  // Store the compressed entries in an array before writing them back,
+  // because compressing is async and transactions auto close while idle
+  for await (const entry of readTx.store) {
+    const value = entry.value;
+    readPromises.push(
+      gzip.tryCompress(value.content).then(({ compressed, result }) => {
+        grownSize -= value.content.byteLength - result.byteLength;
+        updates.push({ ...value, content: result, compressed });
+      }),
+    );
+  }
+  await Promise.all(readPromises);
+
+  const writeTx = db.transaction("entries", "readwrite");
+  let writePromises: Promise<any>[] = [writeTx.done];
+  for (const update of updates) {
+    writePromises.push(writeTx.store.put(update));
+  }
+  await Promise.all(writePromises);
+
+  return grownSize;
 }
