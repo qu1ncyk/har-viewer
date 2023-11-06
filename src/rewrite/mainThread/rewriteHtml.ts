@@ -144,7 +144,7 @@ export function rewriteHtml(html: string, url: string, collection: string, time:
     is_live: false,
     coll: collection,
     proxy_magic: "",
-    static_prefix: "https://cdn.jsdelivr.net/npm/@webrecorder/wombat@3.3.6/dist/",
+    static_prefix: "https://cdn.jsdelivr.net/npm/@webrecorder/wombat@3.6.1/dist/",
     enable_auto_fetch: true,
     isSW: true,
     wombat_ts: 0,
@@ -155,7 +155,7 @@ export function rewriteHtml(html: string, url: string, collection: string, time:
   };
 
   dom.head.insertAdjacentHTML("afterbegin", `
-    <script src="https://cdn.jsdelivr.net/npm/@webrecorder/wombat@3.3.6/dist/wombat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@webrecorder/wombat@3.6.1/dist/wombat.js"></script>
     <script>
       if (window && window._WBWombatInit) {
         window._WBWombatInit(${JSON.stringify(wombatConfig)});
