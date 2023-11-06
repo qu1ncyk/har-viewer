@@ -1,7 +1,14 @@
 import type { Har, Page, Entry, Content } from "har-format";
 import { decode as decodeBase64 } from "base64-arraybuffer";
 
-import { collectionsDb, openCollection, HeadersObject, Collection } from "./db";
+import {
+  collectionsDb,
+  openCollection,
+  HeadersObject,
+  Collection,
+  type Entry as StoredEntry,
+} from "./db";
+import * as gzip from "../gzip";
 import { IDBPTransaction } from "idb";
 
 type CollectionTx = IDBPTransaction<
@@ -27,6 +34,7 @@ export class Inserter {
     const entries = har.log.entries;
     if (entries.length === 0)
       throw new Error("Har file does not contain entries");
+    const storedEntries = await Inserter.transformEntries(entries);
 
     const [collection, collections] = await Promise.all([
       openCollection(name),
@@ -39,7 +47,7 @@ export class Inserter {
     );
     let promises: Promise<any>[] = [tx.done];
     promises.push(inserter.insertPages(tx, pages, entries));
-    promises.push(inserter.insertEntries(tx, entries));
+    promises.push(inserter.insertEntries(tx, storedEntries));
     promises.push(inserter.insertUrls(tx));
 
     const time = new Date(pages[0].startedDateTime);
@@ -65,44 +73,55 @@ export class Inserter {
   }
 
   /**
-   * Insert multiple `Entry` objects into the database.
+   * Transform an `Entry` array from a HAR file to an `Entry` array as stored
+   * in the database.
    */
-  async insertEntries(tx: CollectionTx, entries: Entry[]) {
-    let promises = [];
-    const entriesStore = tx.objectStore("entries");
-    for (let i = 0; i < entries.length; i++) {
-      const entry = entries[i];
+  static async transformEntries(entries: Entry[]): Promise<StoredEntry[]> {
+    const promises = entries.map(async (entry) => {
+      const content = Inserter.contentToU8(entry.response.content);
+      const { result, compressed } = await gzip.tryCompress(content);
 
       const [requestHeaders] = Inserter.rewriteHeaders(entry.request.headers);
       const [responseHeaders, setCookie] = Inserter.rewriteHeaders(
         entry.response.headers,
       );
+
+      return {
+        id: entry.pageref ?? "",
+        url: entry.request.url,
+        requestHeaders,
+        responseHeaders,
+        setCookie,
+        status: entry.response.status,
+        content: result,
+        time: new Date(entry.startedDateTime),
+        compressed,
+      };
+    });
+
+    return await Promise.all(promises);
+  }
+
+  /**
+   * Insert multiple `Entry` objects into the database.
+   */
+  async insertEntries(tx: CollectionTx, entries: StoredEntry[]) {
+    let promises = [];
+    const entriesStore = tx.objectStore("entries");
+    for (let i = 0; i < entries.length; i++) {
+      const entry = entries[i];
+
       this.size +=
-        Inserter.headersSize(requestHeaders) +
-        Inserter.headersSize(responseHeaders);
-      this.size += setCookie.join("").length;
+        Inserter.headersSize(entry.requestHeaders) +
+        Inserter.headersSize(entry.responseHeaders);
+      this.size += entry.setCookie.join("").length;
 
-      const content = Inserter.contentToU8(entry.response.content);
-      this.size += content.byteLength;
+      this.size += entry.content.byteLength;
 
-      const dates = this.urlDates.get(entry.request.url) ?? [];
-      this.urlDates.set(entry.request.url, [
-        ...dates,
-        new Date(entry.startedDateTime),
-      ]);
+      const dates = this.urlDates.get(entry.url) ?? [];
+      this.urlDates.set(entry.url, [...dates, new Date(entry.time)]);
 
-      promises.push(
-        entriesStore.put({
-          id: entry.pageref ?? "",
-          url: entry.request.url,
-          requestHeaders,
-          responseHeaders,
-          setCookie,
-          status: entry.response.status,
-          content,
-          time: new Date(entry.startedDateTime),
-        }),
-      );
+      promises.push(entriesStore.put(entry));
     }
     return promises;
   }
