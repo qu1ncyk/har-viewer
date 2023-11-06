@@ -3,6 +3,7 @@ import { sendAction } from "../../sw/sendAction";
 import { rewriteHeaders } from "./rewriteHeaders";
 import { rewriteSetCookie } from "./rewriteSetCookie";
 import { rewriteWorker } from "./rewriteWorker";
+import * as gzip from "../../gzip";
 
 /**
  * Rewrites the URLs in the given file, according to the modifier in the time.
@@ -20,6 +21,10 @@ export async function rewrite(entry?: Entry, time?: string, collection?: string)
 
   const { url, status } = entry;
   let content: ArrayBuffer | string | null = entry.content;
+  if (entry.compressed) {
+    content = await gzip.decompressToBytes(content);
+  }
+
   let headers = new Headers(entry.responseHeaders);
 
   // Set-Cookie can't be set in Headers
