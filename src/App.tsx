@@ -1,21 +1,19 @@
-import { Component, lazy } from 'solid-js';
-import { Route, Routes } from 'solid-app-router';
+import { Component, lazy } from "solid-js";
+import { Route, Router } from "@solidjs/router";
 
-import SwLoader from './SwLoader';
+import SwLoader from "./SwLoader";
 
-const Home = lazy(() => import('./pages/Home'));
-const Collection = lazy(() => import('./pages/Collection'));
-const Viewer = lazy(() => import('./pages/Viewer'));
+const Home = lazy(() => import("./pages/Home"));
+const Collection = lazy(() => import("./pages/Collection"));
+const Viewer = lazy(() => import("./pages/Viewer"));
 
 const App: Component = () => {
   return (
-    <SwLoader>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/collection/:name" element={<Collection />} />
-        <Route path="/viewer/:name/*url" element={<Viewer />} />
-      </Routes>
-    </SwLoader>
+    <Router root={SwLoader}>
+      <Route path="/" component={Home} />
+      <Route path="/collection/:name" component={Collection} />
+      <Route path="/viewer/:name/*url" component={Viewer} />
+    </Router>
   );
 };
 

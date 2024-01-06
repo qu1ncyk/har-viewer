@@ -1,9 +1,9 @@
-import { Component, createSignal, Match, onMount, Switch } from "solid-js";
+import { ParentComponent, createSignal, Match, onMount, Switch } from "solid-js";
 
 import styles from "./SwLoader.module.css";
 import { register } from "./sw/register";
 
-const Popup: Component = (props) => {
+const Popup: ParentComponent = (props) => {
   const [error, setError] = createSignal("");
   const [loaded, setLoaded] = createSignal(false);
 

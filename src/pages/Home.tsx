@@ -1,6 +1,5 @@
 import { Component, createResource, For, Show } from "solid-js";
 import type { Har } from "har-format";
-import { Link } from "solid-app-router";
 
 import { formatSize, readFile, readFileAsBytes } from "../utils";
 import { Inserter, get } from "../db";
@@ -24,9 +23,9 @@ const Home: Component = () => {
           <For each={collections()}>
             {([name, value]) => (
               <li>
-                <Link href={collectionUrl(name)} class={styles.collectionName}>
+                <a href={collectionUrl(name)} class={styles.collectionName}>
                   {name}
-                </Link>
+                </a>
                 <p class={styles.subtitle}>
                   Snapshot taken at {value.time.toLocaleString()}
                 </p>

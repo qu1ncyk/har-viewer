@@ -1,6 +1,6 @@
 import { Component, createEffect, createSignal } from "solid-js";
 import { icons } from "feather-icons";
-import { useParams, useLocation, Link } from "solid-app-router";
+import { useParams } from "@solidjs/router";
 
 import styles from "./Viewer.module.css";
 import Feather from "../Feather";
@@ -68,9 +68,9 @@ const Viewer: Component = () => {
   return (
     <div class={styles.container} classList={{ [styles.topBarHidden]: topBarHidden() }}>
       <div class={styles.topBar}>
-        <Link href={`/collection/${name}`} class={styles.iconButton}>
+        <a href={`/collection/${name}`} class={styles.iconButton}>
           <Feather icon={icons.x} />
-        </Link>
+        </a>
         <button class={styles.iconButton} onClick={frameAction("back")}>
           <Feather icon={icons["arrow-left"]} />
         </button>

@@ -1,4 +1,3 @@
-import sw from "service-worker?url";
 import { sleep } from "../utils";
 import { receiveAction } from "./receiveAction";
 
@@ -19,7 +18,8 @@ export async function register() {
   if ("serviceWorker" in navigator) {
     const MAX_RETRY = 3;
     for (let i = 0; i < MAX_RETRY; i++) {
-      const registration = await navigator.serviceWorker.register(sw, { scope: "/" });
+      const registration = await navigator.serviceWorker.register("/sw.js");
+
       try {
         // execute waitForController with a time limit of 100 ms
         await Promise.race([waitForController(), sleep(100, true)]);

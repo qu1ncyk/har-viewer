@@ -1,4 +1,4 @@
-import { Link, useNavigate, useParams } from "solid-app-router";
+import { useNavigate, useParams } from "@solidjs/router";
 import { Component, createResource, For, Show } from "solid-js";
 import { icons } from "feather-icons";
 
@@ -17,9 +17,9 @@ const Collection: Component = () => {
   return (
     <>
       <h1>HAR viewer</h1>
-      <Link href="/" class={styles.back}>
+      <a href="/" class={styles.back}>
         <Feather icon={icons.x} />
-      </Link>
+      </a>
       <Show when={!pages.loading} fallback={<p>Loading...</p>}>
         <div>
           <span>Found {pages()?.length} {noun("page", pages()?.length !== 1)} in {name}</span>

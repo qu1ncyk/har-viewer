@@ -2,8 +2,7 @@ import {
   openDB,
   DBSchema,
   IDBPDatabase,
-  IDBPTransaction,
-} from "idb/with-async-ittr";
+} from "idb";
 import * as gzip from "../gzip";
 
 interface Collections extends DBSchema {
